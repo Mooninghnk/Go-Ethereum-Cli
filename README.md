@@ -1,6 +1,6 @@
 # Go-Ethereum Cli
 Use ethereum in the terminal :) 
-Send - Check - CheckPending---- more features are comming.
+CheckBalance - CreateNewWallets. SOON: transfers, create contract, create tokens, manage your etheruem.
 # Build it
 ``` go get github.com/ethereum/go-ethereum ```
 
