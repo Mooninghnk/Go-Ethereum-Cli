@@ -1,19 +1,13 @@
 package main
 
 import (
+	"Go-Ethereum-Cli/lib/ethgo"
 	"bufio"
-	"context"
+	"crypto/ecdsa"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
-	"math"
-	"math/big"
 	"os"
-	"crypto/ecdsa"
-
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
 	//"golang.org/x/crypto/sha3"
 )
 
@@ -21,50 +15,6 @@ func print(val ...interface{}) {
 	for _, x := range val {
 		fmt.Println(x)
 	}
-}
-
-func genPrivateKey()(*ecdsa.PrivateKey, error){
-	//generate a privateKey
-	return crypto.GenerateKey()
-}
-func getPrivateKeyBites(privkey *ecdsa.PrivateKey) ([]byte) {
-	//turn the key into  bytes
-	return crypto.FromECDSA(privkey)
-}
-
-func hexEncode(privkeybytes []byte) (string) {
-	//turn priavate key bytes into string
-	return hexutil.Encode(privkeybytes)
-}
-func genPublicKey(privkey *ecdsa.PrivateKey) (interface{}) {
-	return privkey.Public()
-}
-
-
-func publicKeyBytes(publicKeyECDSA *ecdsa.PublicKey) ([]byte) {
-	return crypto.FromECDSAPub(publicKeyECDSA)
-}
-
-func setAddress(address string) common.Address {
-	return common.HexToAddress(address)
-}
-
-func getFixedBalance(client *ethclient.Client, account common.Address) (*big.Int, error) {
-	return client.BalanceAt(context.Background(), account, nil)
-}
-
-func getPublicAddress(publicKeyECDSA *ecdsa.PublicKey) (string) {
-	return crypto.PubkeyToAddress(*publicKeyECDSA).Hex()
-}
-
-func toEth(balance *big.Int) *big.Float {
-	fbalance := new(big.Float)
-	fbalance.SetString(balance.String())
-	return new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
-}
-
-func getPendingBalance(client *ethclient.Client, account common.Address) (*big.Int, error) {
-	return client.PendingBalanceAt(context.Background(), account)
 }
 
 func main() {
@@ -82,16 +32,16 @@ func main() {
 			for input.Scan() {
 				hexAddress := input.Text()
 				if len(hexAddress) == 42 {
-					set := setAddress(hexAddress)
-					fixedBalance, err := getFixedBalance(mainNetClient, set)
+					set := ethgo.SetAddress(hexAddress)
+					fixedBalance, err := ethgo.GetFixedBalance(mainNetClient, set)
 					if err != nil {
 						log.Fatal(err)
 					}
-					resultBalnace := toEth(fixedBalance)
+					resultBalnace := ethgo.ToEth(fixedBalance)
 					fmt.Printf("%g%s\n", resultBalnace, "  ETH")
 					print("1-ReadBalance || 2-GenerateEthereumWallet || 3-Transfer || 0-Exit")
 					break
-				}else{
+				} else {
 					print("not long enough: " + hexAddress)
 					print("1-ReadBalance || 2-GenerateEthereumWallet || 3-Transfer || 0-Exit")
 					break
@@ -100,18 +50,18 @@ func main() {
 		case "0":
 			os.Exit(0)
 		case "2":
-			privKey, err := genPrivateKey()
+			privKey, err := ethgo.GenPrivateKey()
 			if err != nil {
 				log.Fatal(err)
 			}
-			privKeyBytes := getPrivateKeyBites(privKey)
-			publickey := genPublicKey(privKey)
+			privKeyBytes := ethgo.GetPrivateKeyBites(privKey)
+			publickey := ethgo.GenPublicKey(privKey)
 			publickeyACD, ok := publickey.(*ecdsa.PublicKey)
-			if !ok  {
+			if !ok {
 				log.Fatal(err)
-			} 
+			}
+			fmt.Printf("\n%s\n%s\n\n", "Private Key: "+ethgo.HexEncode(privKeyBytes), "PublicKey: "+ethgo.GetPublicAddress(publickeyACD))
 			print("1-ReadBalance || 2-GenerateEthereumWallet || 3-Transfer || 0-Exit\n")
-			fmt.Printf("%s\n%s\n", "Private Key: "+ hexEncode(privKeyBytes), "PublicKey: "+ getPublicAddress(publickeyACD))
 		default:
 			print("1-ReadBalance || 2-GenerateEthereumWallet || 3-Transfer || 0-Exit")
 		}
