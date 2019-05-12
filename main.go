@@ -8,7 +8,10 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
 	"os"
+	"strconv"
 	//"golang.org/x/crypto/sha3"
+	"github.com/ethereum/go-ethereum/crypto"
+	"strings"
 )
 
 func print(val ...interface{}) {
@@ -62,6 +65,31 @@ func main() {
 			}
 			fmt.Printf("\n%s\n%s\n\n", "Private Key: "+ethgo.HexEncode(privKeyBytes), "PublicKey: "+ethgo.GetPublicAddress(publickeyACD))
 			print("1-ReadBalance || 2-GenerateEthereumWallet || 3-Transfer || 0-Exit\n")
+		case "3":
+			for input.Scan() {
+				str := strings.Split(input.Text(), " ")
+				prvk, amounnt, to := str[0], str[1], str[2]
+				privateKeym, err := crypto.HexToECDSA(prvk)
+				if err != nil {
+					log.Fatal(err)
+				}
+				pubkey := privateKeym.Public()
+				pubkeyECDSA, ok := pubkey.(*ecdsa.PublicKey)
+				if !ok {
+					log.Fatal("Cannot accept type publickey is njot of the type *ecdsa .PublicKey")
+				}
+				fromAdds := crypto.PubkeyToAddress(*pubkeyECDSA)
+				nonce, err := ethgo.GetNonce(mainNetClient, fromAdds)
+				parsedPrice, err := strconv.ParseFloat(amounnt, 64)
+				val := ethgo.BigInt(ethgo.Towei(parsedPrice))
+				gasLimit := uint64(21000)
+				gasPrice, err := ethgo.SuggestGas(mainNetClient)
+				toAddress := ethgo.SetAddress(to)
+				var data []byte
+				tx := ethgo.GenTransaction(nonce, toAddress, val, gasLimit, gasPrice, data)
+				chainID := ethgo.Gen
+				signedTx, err := ethgo.SignTx(tx, chainID, privateKeym)
+			}
 		default:
 			print("1-ReadBalance || 2-GenerateEthereumWallet || 3-Transfer || 0-Exit")
 		}
