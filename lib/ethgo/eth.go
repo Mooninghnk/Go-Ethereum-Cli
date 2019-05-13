@@ -70,7 +70,7 @@ func GetPendingBalance(client *ethclient.Client, account common.Address) (*big.I
 
 // Towei converter
 func Towei(num float64) int64 {
-	return int64(num * (1 * (10 ^ 18)))
+	return int64(num * 1e18)
 }
 
 //SuggestGas returns the best gas price in typof bigInt
@@ -106,4 +106,9 @@ func SingTx(transaction *types.Transaction, chainID *big.Int, privkey *ecdsa.Pri
 //SendTransaction return an error if process was not seccesfull
 func SendTransaction(client *ethclient.Client, singTX *types.Transaction) error {
 	return client.SendTransaction(context.Background(), singTX)
+}
+
+//HexToEcdsa encodes a private key string to a ECDSA
+func HexToEcdsa(key string) (*ecdsa.PrivateKey, error) {
+	return crypto.HexToECDSA(key)
 }
